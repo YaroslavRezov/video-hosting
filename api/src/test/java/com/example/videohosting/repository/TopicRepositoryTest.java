@@ -1,6 +1,7 @@
 package com.example.videohosting.repository;
 
 import com.example.videohosting.model.entity.TopicEntity;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -16,6 +17,11 @@ public class TopicRepositoryTest extends RepositoryIT {
     @Autowired
     private TopicRepository topicRepository;
 
+    @AfterEach
+    public void delete() {
+        topicRepository.deleteAll();
+    }
+
     @Test
     public void save() {
         TopicEntity expected = topicRepository.save(createTopicEntity1());
@@ -23,10 +29,7 @@ public class TopicRepositoryTest extends RepositoryIT {
         TopicEntity actual = topicRepository.findById(expected.getId())
                 .orElseThrow(() -> new RuntimeException("no such topic with id: " + expected.getId()));
 
-        assertThat(actual)
-                .usingRecursiveComparison()
-                .isEqualTo(expected);
-        topicRepository.deleteAll();
+        assertEquals(expected, actual);
     }
 
     @Test
@@ -50,6 +53,5 @@ public class TopicRepositoryTest extends RepositoryIT {
                     assertEquals(expected2.getDescription(), actual2.getDescription());
                     assertEquals(expected2.getCreatedAt(), actual2.getCreatedAt());
                 });
-        topicRepository.deleteAll();
     }
 }

@@ -29,8 +29,7 @@ public class TopicEntity {
     @Column(name = "created_at", nullable = false, updatable = false)
     @CreationTimestamp
     private LocalDateTime createdAt;
-
-//    @OneToMany(mappedBy = "topicEntity", cascade = CascadeType.ALL, orphanRemoval = true)
-//    @OrderBy("episodeNumber ASC")
-//    private List<VideoEntity> videos = new ArrayList<>();
+    @OneToMany(mappedBy = "topicEntity", cascade = {CascadeType.REMOVE, CascadeType.PERSIST, CascadeType.MERGE}, orphanRemoval = true)
+    @OrderBy("episodeNumber ASC")
+    private List<VideoEntity> videos = new ArrayList<>();
 }

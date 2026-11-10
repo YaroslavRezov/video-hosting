@@ -1,1 +1,3 @@
 rootProject.name = 'video-hosting'
+include 'specs'
+include 'api'
