@@ -2,6 +2,7 @@ package com.example.videohosting.model.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -25,16 +26,11 @@ public class TopicEntity {
     private String name;
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
-    @Column(name = "created_at", nullable = false)
+    @Column(name = "created_at", nullable = false, updatable = false)
+    @CreationTimestamp
     private LocalDateTime createdAt;
 
 //    @OneToMany(mappedBy = "topicEntity", cascade = CascadeType.ALL, orphanRemoval = true)
 //    @OrderBy("episodeNumber ASC")
 //    private List<VideoEntity> videos = new ArrayList<>();
-
-    @PrePersist
-    void onCreate() {
-        this.createdAt = LocalDateTime.now();
-    } //ai bollocks
-
 }
