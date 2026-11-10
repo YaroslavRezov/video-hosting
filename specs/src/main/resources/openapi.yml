@@ -1,0 +1,269 @@
+openapi: 3.1.0
+info:
+  title: Video Hosting API
+  version: 1.0.0
+  description: Anime video hosting — topics and videos
+
+tags:
+  - name: topic
+    description: Topic management
+  - name: video
+    description: Video management
+
+paths:
+  /api/topics:
+    get:
+      tags: [topic]
+      operationId: listTopics
+      summary: List all topics
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Topic'
+    post:
+      tags: [topic]
+      operationId: createTopic
+      summary: Create a topic
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TopicCreateRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Topic'
+
+  /api/topics/{topicId}:
+    get:
+      tags: [topic]
+      operationId: getTopic
+      summary: Get a topic by id
+      parameters:
+        - name: topicId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Topic'
+        '404':
+          description: Topic not found
+
+  /api/topics/{topicId}/videos:
+    get:
+      tags: [video]
+      operationId: listVideosByTopic
+      summary: List videos under a topic, ordered by episode number
+      parameters:
+        - name: topicId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Video'
+
+  /api/videos:
+    post:
+      tags: [video]
+      operationId: createVideo
+      summary: Create a video (non-interface upload entry point)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VideoCreateRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Video'
+
+  /api/videos/{videoId}:
+    get:
+      tags: [video]
+      operationId: getVideo
+      summary: Get a single video
+      parameters:
+        - name: videoId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Video'
+        '404':
+          description: Video not found
+
+  /api/videos/{videoId}/next:
+    get:
+      tags: [video]
+      operationId: getNextVideo
+      summary: Get the next episode in the same topic
+      parameters:
+        - name: videoId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Video'
+        '404':
+          description: No next video
+
+  /api/videos/{videoId}/previous:
+    get:
+      tags: [video]
+      operationId: getPreviousVideo
+      summary: Get the previous episode in the same topic
+      parameters:
+        - name: videoId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Video'
+        '404':
+          description: No previous video
+
+  /api/videos/search:
+    get:
+      tags: [video]
+      operationId: searchVideos
+      summary: Search videos by title
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Video'
+
+components:
+  schemas:
+    Topic:
+      type: object
+      required: [id, name, createdAt]
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+
+    TopicCreateRequest:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+          nullable: true
+
+    Video:
+      type: object
+      required: [id, title, episodeNumber, filePath, topicId, createdAt]
+      properties:
+        id:
+          type: integer
+          format: int64
+        title:
+          type: string
+          maxLength: 250
+        episodeNumber:
+          type: integer
+        description:
+          type: string
+          nullable: true
+        filePath:
+          type: string
+          maxLength: 500
+        topicId:
+          type: integer
+          format: int64
+        createdAt:
+          type: string
+          format: date-time
+
+    VideoCreateRequest:
+      type: object
+      required: [title, episodeNumber, filePath, topicId]
+      properties:
+        title:
+          type: string
+          maxLength: 250
+        episodeNumber:
+          type: integer
+        description:
+          type: string
+          nullable: true
+        filePath:
+          type: string
+          maxLength: 500
+        topicId:
+          type: integer
+          format: int64

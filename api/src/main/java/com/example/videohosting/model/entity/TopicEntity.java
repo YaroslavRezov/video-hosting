@@ -29,8 +29,8 @@ public class TopicEntity {
     @Column(name = "created_at", nullable = false, updatable = false)
     @CreationTimestamp
     private LocalDateTime createdAt;
-
-//    @OneToMany(mappedBy = "topicEntity", cascade = CascadeType.ALL, orphanRemoval = true)
-//    @OrderBy("episodeNumber ASC")
-//    private List<VideoEntity> videos = new ArrayList<>();
+    @OneToMany(mappedBy = "topicEntity", cascade = {CascadeType.REMOVE, CascadeType.PERSIST, CascadeType.MERGE}, orphanRemoval = true)
+    @OrderBy("episodeNumber ASC")
+    private List<VideoEntity> videos = new ArrayList<>();
 }
+//git commit --amned -m "feat(13) splited into api and specs, added openapi, dto generated, gradle chaneged to work with api and specs; got back that oneToMany"
