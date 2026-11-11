@@ -1,0 +1,66 @@
+plugins {
+    id 'java-library'
+    id 'org.openapi.generator' version '7.26.0'
+}
+
+group = 'com.example'
+version = '0.0.1-SNAPSHOT'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation platform('org.springframework.boot:spring-boot-dependencies:4.1.2')
+    compileOnly 'org.projectlombok:lombok:1.18.48'
+    annotationProcessor 'org.projectlombok:lombok:1.18.48'
+    api 'org.springframework.boot:spring-boot-starter-webmvc'
+    implementation 'io.swagger.core.v3:swagger-annotations-jakarta'
+    implementation 'io.swagger.core.v3:swagger-models-jakarta'
+//    implementation 'org.openapitools:jackson-databind-nullable'
+    implementation 'jakarta.validation:jakarta.validation-api'
+    implementation 'jakarta.annotation:jakarta.annotation-api'
+    implementation 'org.springdoc:springdoc-openapi-starter-common:3.1.0'
+}
+openApiGenerate {
+    generatorName = "spring"
+    inputSpec = "${projectDir}/src/main/resources/openapi.yml"
+    outputDir = "${buildDir}/generated"
+    apiPackage = "com.example.specs.generated.api"
+    modelPackage = "com.example.specs.generated.model"
+    modelNameSuffix = "Dto"
+    configOptions = [
+            dateLibrary   : "java8",
+            interfaceOnly : "true",
+            useSpringBoot3: "true",
+            openApiNullable: "false",
+            useTags       : "true",
+            useSpringBoot4: "true",
+            useJackson3: "true"
+    ]
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src/main/java', "${buildDir}/generated/src/main/java"]
+        }
+    }
+}
+
+compileJava.dependsOn tasks.openApiGenerate
+
+jar {
+    archiveBaseName = 'specs-generated'
+    from sourceSets.main.output
+}
+
+artifacts {
+    archives jar
+}

@@ -2,6 +2,7 @@ package com.example.videohosting.repository;
 
 import com.example.videohosting.model.entity.TopicEntity;
 import com.example.videohosting.model.entity.VideoEntity;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -21,6 +22,11 @@ public class VideoRepositoryTest extends RepositoryIT {
     @Autowired
     private TopicRepository topicRepository;
 
+    @AfterEach
+    public void delete() {
+        topicRepository.deleteAll();
+    }
+
     @Test
     public void save() {
         TopicEntity savedTopicEntity = topicRepository.save(createTopicEntity1());
@@ -32,8 +38,6 @@ public class VideoRepositoryTest extends RepositoryIT {
         assertThat(actual)
                 .usingRecursiveComparison()
                 .isEqualTo(expected);
-        videoRepository.deleteAll();
-        topicRepository.deleteAll();
     }
 
     @Test
@@ -65,8 +69,6 @@ public class VideoRepositoryTest extends RepositoryIT {
                     assertEquals(expected2.getFilePath(), actual2.getFilePath());
                     assertEquals(expected2.getTopicEntity(), actual2.getTopicEntity());
                 });
-        videoRepository.deleteAll();
-        topicRepository.deleteAll();
     }
 
 }
