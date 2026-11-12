@@ -1,3 +1,10 @@
 spring:
   application:
     name: video-hosting
+  servlet:                  # ← Indented under spring
+    multipart:
+      max-file-size: 300MB
+      max-request-size: 300MB
+app:
+  video:
+    storage-dir: D:/sod-project/anime/anime-videos
