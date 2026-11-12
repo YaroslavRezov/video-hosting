@@ -36,13 +36,13 @@ openApiGenerate {
     modelPackage = "com.example.specs.generated.model"
     modelNameSuffix = "Dto"
     configOptions = [
-            dateLibrary   : "java8",
             interfaceOnly : "true",
             useSpringBoot3: "true",
             openApiNullable: "false",
             useTags       : "true",
             useSpringBoot4: "true",
-            useJackson3: "true"
+            useJackson3: "true",
+            dateLibrary: "java8-localdatetime"
     ]
 }
 

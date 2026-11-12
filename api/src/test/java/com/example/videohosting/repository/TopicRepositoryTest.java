@@ -45,13 +45,13 @@ public class TopicRepositoryTest extends RepositoryIT {
                     assertEquals(expected1.getId(), actual1.getId());
                     assertEquals(expected1.getName(), actual1.getName());
                     assertEquals(expected1.getDescription(), actual1.getDescription());
-                    assertEquals(expected1.getCreatedAt(), actual1.getCreatedAt());
+                    assertEquals(expected1.getReleasedAt(), actual1.getReleasedAt());
                 })
                 .anySatisfy(actual2 -> {
                     assertEquals(expected2.getId(), actual2.getId());
                     assertEquals(expected2.getName(), actual2.getName());
                     assertEquals(expected2.getDescription(), actual2.getDescription());
-                    assertEquals(expected2.getCreatedAt(), actual2.getCreatedAt());
+                    assertEquals(expected2.getReleasedAt(), actual2.getReleasedAt());
                 });
     }
 }
