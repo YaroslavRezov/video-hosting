@@ -34,7 +34,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TopicCreateRequest'
+              $ref: '#/components/schemas/Topic'
       responses:
         '201':
           description: Created
@@ -86,18 +86,52 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Video'
-
   /api/videos:
+    get:
+      tags: [ video ]
+      operationId: listVideos
+      summary: List all videos, optionally filtered by topic
+      parameters:
+        - name: topicId
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Video'
     post:
       tags: [video]
       operationId: createVideo
-      summary: Create a video (non-interface upload entry point)
+      summary: Create a video with an uploaded file
       requestBody:
         required: true
         content:
-          application/json:
+          multipart/form-data:
             schema:
-              $ref: '#/components/schemas/VideoCreateRequest'
+              type: object
+              required: [file, title, episodeNumber, topicId]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                title:
+                  type: string
+                  maxLength: 250
+                episodeNumber:
+                  type: integer
+                description:
+                  type: string
+                topicId:
+                  type: integer
+                  format: int64
       responses:
         '201':
           description: Created
@@ -198,7 +232,7 @@ components:
   schemas:
     Topic:
       type: object
-      required: [id, name, createdAt]
+      required: [id, name, releasedAt]
       properties:
         id:
           type: integer
@@ -209,20 +243,20 @@ components:
         description:
           type: string
           nullable: true
-        createdAt:
+        releasedAt:
           type: string
           format: date-time
 
-    TopicCreateRequest:
-      type: object
-      required: [name]
-      properties:
-        name:
-          type: string
-          maxLength: 255
-        description:
-          type: string
-          nullable: true
+#    TopicCreateRequest:
+#      type: object
+#      required: [name]
+#      properties:
+#        name:
+#          type: string
+#          maxLength: 255
+#        description:
+#          type: string
+#          nullable: true
 
     Video:
       type: object
@@ -249,21 +283,21 @@ components:
           type: string
           format: date-time
 
-    VideoCreateRequest:
-      type: object
-      required: [title, episodeNumber, filePath, topicId]
-      properties:
-        title:
-          type: string
-          maxLength: 250
-        episodeNumber:
-          type: integer
-        description:
-          type: string
-          nullable: true
-        filePath:
-          type: string
-          maxLength: 500
-        topicId:
-          type: integer
-          format: int64
+#    VideoCreateRequest:
+#      type: object
+#      required: [title, episodeNumber, filePath, topicId]
+#      properties:
+#        title:
+#          type: string
+#          maxLength: 250
+#        episodeNumber:
+#          type: integer
+#        description:
+#          type: string
+#          nullable: true
+#        filePath:
+#          type: string
+#          maxLength: 500
+#        topicId:
+#          type: integer
+#          format: int64
