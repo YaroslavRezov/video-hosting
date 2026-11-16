@@ -11,7 +11,7 @@ public class TopicEntityData {
 //                .id(1L)
                 .name("Delete")
                 .description("Testing")
-                .releasedAt(LocalDateTime.now())
+                .releasedAt(LocalDateTime.of(2002, 10, 3, 0, 0))
                 .build();
         return topicEntity;
     }
@@ -21,24 +21,8 @@ public class TopicEntityData {
 //                .id(1L)
                 .name("Delete Shippuden")
                 .description("Testing suuii")
-                .releasedAt(LocalDateTime.now())
+                .releasedAt(LocalDateTime.of(2002, 10, 3, 0, 0))
                 .build();
         return topicEntity;
-    }
-
-    public static TopicDto createTopicDto1() {
-        return new TopicDto()
-                .id(1L)
-                .name("Delete")
-                .description("Testing")
-                .releasedAt(LocalDateTime.now());
-    }
-
-    public static TopicDto createTopicDto2() {
-        return new TopicDto()
-                .id(1L)
-                .name("Delete Shippuden")
-                .description("Testing suuii")
-                .releasedAt(LocalDateTime.now());
     }
 }

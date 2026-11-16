@@ -5,16 +5,16 @@ info:
   description: Anime video hosting — topics and videos
 
 tags:
-  - name: topic
+  - name: TopicController
     description: Topic management
-  - name: video
+  - name: VideoController
     description: Video management
 
 paths:
   /api/topics:
     get:
-      tags: [topic]
-      operationId: listTopics
+      tags: [TopicController]
+      operationId: getTopics
       summary: List all topics
       responses:
         '200':
@@ -26,7 +26,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/Topic'
     post:
-      tags: [topic]
+      tags: [TopicController]
       operationId: createTopic
       summary: Create a topic
       requestBody:
@@ -45,7 +45,7 @@ paths:
 
   /api/topics/{topicId}:
     get:
-      tags: [topic]
+      tags: [TopicController]
       operationId: getTopic
       summary: Get a topic by id
       parameters:
@@ -67,8 +67,8 @@ paths:
 
   /api/topics/{topicId}/videos:
     get:
-      tags: [video]
-      operationId: listVideosByTopic
+      tags: [VideoController]
+      operationId: getVideosByTopic
       summary: List videos under a topic, ordered by episode number
       parameters:
         - name: topicId
@@ -88,8 +88,8 @@ paths:
                   $ref: '#/components/schemas/Video'
   /api/videos:
     get:
-      tags: [ video ]
-      operationId: listVideos
+      tags: [VideoController]
+      operationId: getVideos
       summary: List all videos, optionally filtered by topic
       parameters:
         - name: topicId
@@ -108,7 +108,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/Video'
     post:
-      tags: [video]
+      tags: [VideoController]
       operationId: createVideo
       summary: Create a video with an uploaded file
       requestBody:
@@ -142,7 +142,7 @@ paths:
 
   /api/videos/{videoId}:
     get:
-      tags: [video]
+      tags: [VideoController]
       operationId: getVideo
       summary: Get a single video
       parameters:
@@ -164,7 +164,7 @@ paths:
 
   /api/videos/{videoId}/next:
     get:
-      tags: [video]
+      tags: [VideoController]
       operationId: getNextVideo
       summary: Get the next episode in the same topic
       parameters:
@@ -186,7 +186,7 @@ paths:
 
   /api/videos/{videoId}/previous:
     get:
-      tags: [video]
+      tags: [VideoController]
       operationId: getPreviousVideo
       summary: Get the previous episode in the same topic
       parameters:
@@ -208,7 +208,7 @@ paths:
 
   /api/videos/search:
     get:
-      tags: [video]
+      tags: [VideoController]
       operationId: searchVideos
       summary: Search videos by title
       parameters:
@@ -227,6 +227,35 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Video'
+  /api/videos/{videoId}/stream:
+    get:
+      tags: [VideoController]
+      operationId: streamVideo
+      summary: Stream video file bytes (supports HTTP Range)
+      parameters:
+        - name: videoId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Full file
+          content:
+            video/mp4:
+              schema:
+                type: string
+                format: binary
+        '206':
+          description: Partial content (Range request)
+          content:
+            video/mp4:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Video not found
 
 components:
   schemas:

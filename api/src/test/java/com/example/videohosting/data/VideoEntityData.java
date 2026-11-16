@@ -61,4 +61,14 @@ public class VideoEntityData {
                 .build();
         return videoEntity;
     }
+
+    public static VideoEntity createVideoEntity(TopicEntity topic, String title, int episodeNumber) {
+        return VideoEntity.builder()
+                .title(title)
+                .episodeNumber(episodeNumber)
+                .description("desc")
+                .filePath("stored-" + episodeNumber + ".mp4")
+                .topicEntity(topic)
+                .build();
+    }
 }

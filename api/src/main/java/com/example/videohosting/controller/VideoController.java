@@ -1,0 +1,49 @@
+package com.example.videohosting.controller;
+
+import com.example.specs.generated.api.VideoControllerApi;
+import com.example.specs.generated.model.VideoDto;
+import com.example.videohosting.service.VideoService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
+
+@RestController
+@RequiredArgsConstructor
+public class VideoController implements VideoControllerApi {
+
+    private final VideoService videoService;
+
+    @Override
+    public ResponseEntity<VideoDto> getVideo(Long videoId) {
+        return ResponseEntity.ok(videoService.getVideo(videoId));
+    }
+
+    @Override
+    public ResponseEntity<List<VideoDto>> getVideosByTopic(Long topicId) {
+        return ResponseEntity.ok(videoService.getVideos(topicId));
+    }
+
+    @Override
+    public ResponseEntity<VideoDto> createVideo(MultipartFile file, String title, Integer episodeNumber, Long topicId, String description) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(videoService.save(file, title, episodeNumber, topicId, description));
+    }
+
+    @Override
+    public ResponseEntity<Resource> streamVideo(Long videoId) {
+        Resource video = videoService.getVideoStream(videoId);
+        MediaType mediaType = MediaType.parseMediaType("video/mp4");
+
+        return ResponseEntity.ok()
+                .contentType(mediaType)
+                .header(HttpHeaders.ACCEPT_RANGES, "bytes")
+                .body(video);
+    }
+}
