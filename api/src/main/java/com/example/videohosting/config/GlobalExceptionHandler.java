@@ -16,31 +16,31 @@ import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public Map<String, String> handleValidation(MethodArgumentNotValidException ex) {
+    public ResponseEntity<Map<String, String>> handleValidation(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();
         ex.getBindingResult().getFieldErrors()
                 .forEach(err -> errors.put(err.getField(), err.getDefaultMessage()));
-        return errors;
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(errors);
     }
 
     @ExceptionHandler(MissingServletRequestPartException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public Map<String, String> handleMissingPart(MissingServletRequestPartException ex) {
-        return Map.of("error", "Required part '" + ex.getRequestPartName() + "' is not present");
+    public ResponseEntity<Map<String, String>> handleMissingPart(MissingServletRequestPartException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of("error", "Required part '" + ex.getRequestPartName() + "' is not present"));
     }
 
     @ExceptionHandler(MissingServletRequestParameterException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public Map<String, String> handleMissingParameter(MissingServletRequestParameterException ex) {
-        return Map.of("error", "Required parameter '" + ex.getParameterName() + "' is missing");
+    public ResponseEntity<Map<String, String>> handleMissingParameter(MissingServletRequestParameterException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Map.of("error", "Required parameter '" + ex.getParameterName() + "' is missing"));
     }
 
     @ExceptionHandler(Exception.class)
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ResponseEntity<Map<String, String>> handleUnexpected(Exception ex) {
         log.error("Unhandled exception", ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

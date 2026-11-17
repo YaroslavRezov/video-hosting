@@ -39,11 +39,9 @@ public class VideoController implements VideoControllerApi {
     @Override
     public ResponseEntity<Resource> streamVideo(Long videoId) {
         Resource video = videoService.getVideoStream(videoId);
-        MediaType mediaType = MediaType.parseMediaType("video/mp4");
-
         return ResponseEntity.ok()
-                .contentType(mediaType)
                 .header(HttpHeaders.ACCEPT_RANGES, "bytes")
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + video.getFilename() + "\"")
                 .body(video);
     }
 }

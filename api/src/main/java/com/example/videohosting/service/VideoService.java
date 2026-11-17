@@ -48,10 +48,6 @@ public class VideoService {
 
     @Transactional
     public VideoDto save(MultipartFile file, String title, Integer episodeNumber, Long topicId, String description) {
-
-        if (file == null || file.isEmpty()) {
-            throw new RuntimeException("file is empty");
-        }
         String original = file.getOriginalFilename();
         if (original == null || !original.toLowerCase().endsWith(".mp4")) {
             throw new RuntimeException("only .mp4 files are allowed");
