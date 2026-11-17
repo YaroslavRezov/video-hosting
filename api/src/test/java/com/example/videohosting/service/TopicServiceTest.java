@@ -12,7 +12,7 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import java.util.List;
 import java.util.Optional;
 
-import static com.example.videohosting.data.TopicEntityData.createTopicDto1;
+import static com.example.videohosting.data.TopicDtoData.createTopicDto1;
 import static com.example.videohosting.data.TopicEntityData.createTopicEntity1;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;

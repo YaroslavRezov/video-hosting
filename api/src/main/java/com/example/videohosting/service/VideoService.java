@@ -8,11 +8,14 @@ import com.example.videohosting.repository.TopicRepository;
 import com.example.videohosting.repository.VideoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -44,11 +47,7 @@ public class VideoService {
     }
 
     @Transactional
-    public VideoDto save(MultipartFile file, String title, Integer episodeNumber, String description, Long topicId) throws IOException {
-
-        if (file == null || file.isEmpty()) {
-            throw new RuntimeException("file is empty");
-        }
+    public VideoDto save(MultipartFile file, String title, Integer episodeNumber, Long topicId, String description) {
         String original = file.getOriginalFilename();
         if (original == null || !original.toLowerCase().endsWith(".mp4")) {
             throw new RuntimeException("only .mp4 files are allowed");
@@ -64,15 +63,35 @@ public class VideoService {
         }
 
         Path dir = Paths.get(storageDir);
-        Files.createDirectories(dir);
         String storedName = UUID.randomUUID() + ".mp4";
         Path target = dir.resolve(storedName);
-        file.transferTo(target);
+        try {
+            Files.createDirectories(dir);
+            file.transferTo(target);
+        } catch (IOException e) {
+            throw new UncheckedIOException("failed to store file", e);
+        }
 
         VideoEntity videoEntity = videoMapper
                 .toVideoEntity(title, episodeNumber, description, target.toAbsolutePath().toString(), foundTopicEntity);
-        VideoEntity savedVideoEntity = videoRepository.save(videoEntity);
+        VideoEntity savedVideoEntity = videoRepository.saveAndFlush(videoEntity);
 
         return videoMapper.toVideoDto(savedVideoEntity);
+    }
+
+    public Resource getVideoStream(Long id) {
+        VideoEntity videoEntity = videoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("no such video with id: " + id));
+
+        Path file = Paths.get(storageDir).toAbsolutePath().resolve(videoEntity.getFilePath()).normalize();
+
+        Path root = Paths.get(storageDir).toAbsolutePath().normalize();
+        if (!file.startsWith(root)) {
+            throw new RuntimeException("invalid file path for video id: " + id);
+        }
+        if (!Files.exists(file) || !Files.isRegularFile(file)) {
+            throw new RuntimeException("video file missing for id: " + id);
+        }
+        return new FileSystemResource(file);
     }
 }
