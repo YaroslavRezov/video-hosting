@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Watching Video</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #1a1a1a;
+            background-image: url('images/naruto background.jpeg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            padding-top: 40px;
+        }
+
+        .content-box {
+            width: 100%;
+            max-width: 1000px;
+            background-color: #f4f4f4;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+            overflow: hidden;
+            margin-bottom: 50px;
+            height: fit-content;
+        }
+
+        .box-header {
+            background-color: #e65100;
+            color: white;
+            padding: 15px 30px;
+            border-bottom: 3px solid #000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .box-header h1 {
+            margin: 0;
+            font-size: 1.4rem;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .back-link {
+            color: #fff;
+            text-decoration: none;
+            font-size: 1rem;
+            font-weight: bold;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 5px 10px;
+            border-radius: 4px;
+        }
+
+        .back-link:hover {
+            background: rgba(0, 0, 0, 0.4);
+        }
+
+        .box-content {
+            padding: 0;
+            background-color: #000; /* Black background for video area */
+            position: relative;
+        }
+
+        /* Video Player CSS */
+        video {
+            width: 100%;
+            max-height: 80vh; /* Prevent video from being taller than screen */
+            display: block;
+            outline: none;
+        }
+
+        #status {
+            color: #fff;
+            font-size: 1.2rem;
+            padding: 50px;
+            margin: 0;
+            text-align: center;
+        }
+
+        #status.error {
+            color: #ff5555;
+            font-weight: bold;
+        }
+
+        .nav-container {
+            background-color: #f4f4f4;
+            padding: 20px 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            border-top: 2px solid #ccc;
+        }
+
+        .nav-btn {
+            display: flex;
+            align-items: center;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 12px 20px;
+            text-decoration: none;
+            color: #333;
+            font-weight: bold;
+            font-size: 1.05rem;
+            transition: background 0.2s;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-btn:hover {
+            background-color: #eaeaea;
+            color: #e65100;
+        }
+
+        .nav-btn.prev {
+            justify-content: flex-start;
+        }
+
+        .nav-btn.next {
+            justify-content: flex-end;
+        }
+
+        /* The grey circle arrow */
+        .arrow-circle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 35px;
+            height: 35px;
+            background-color: #aaa;
+            color: white;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .nav-btn.prev .arrow-circle {
+            margin-right: 15px;
+        }
+
+        .nav-btn.next .arrow-circle {
+            margin-left: 15px;
+        }
+
+        /* Hide buttons if they aren't available */
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+
+<div class="content-box">
+    <div class="box-header">
+        <h1 id="video-title">Loading...</h1>
+        <a href="javascript:history.back()" class="back-link">&laquo; Go Back</a>
+    </div>
+
+    <div class="box-content">
+        <p id="status">Loading video player...</p>
+
+        <!-- The Player -->
+        <video id="player" controls preload="metadata" style="display: none;">
+            Your browser does not support the video tag.
+        </video>
+    </div>
+    <div class="nav-container" id="nav-container" style="display: none;">
+        <a href="#" id="prev-btn" class="nav-btn prev hidden">
+            <div class="arrow-circle">&#8592;</div>
+            <span id="prev-title">Previous Episode</span>
+        </a>
+
+        <a href="#" id="next-btn" class="nav-btn next hidden">
+            <span id="next-title">Next Episode</span>
+            <div class="arrow-circle">&#8594;</div>
+        </a>
+    </div>
+</div>
+
+
+<script>
+    const statusEl = document.getElementById('status');
+    const titleEl = document.getElementById('video-title');
+    const player = document.getElementById('player');
+
+    const navContainer = document.getElementById('nav-container');
+    const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
+    const prevTitle = document.getElementById('prev-title');
+    const nextTitle = document.getElementById('next-title');
+
+    // 1. Get video ID from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const videoId = urlParams.get('id');
+
+    async function loadVideo() {
+        if (!videoId) {
+            statusEl.textContent = 'Error: No video ID provided in URL.';
+            statusEl.classList.add('error');
+            return;
+        }
+
+        try {
+            // 2. Fetch Video Metadata (Title, etc.)
+            const response = await fetch(`/api/videos/${videoId}`);
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+            const videoData = await response.json();
+
+            // 3. Update UI
+            titleEl.textContent = videoData.title;
+            // 4. Set the source to our Spring Boot streaming endpoint
+            player.src = `/api/videos/${videoId}/stream`;
+            // 5. Show the player, hide loading text
+            statusEl.style.display = 'none';
+            player.style.display = 'block';
+
+            // 3. Fetch Next/Prev in parallel
+            fetchNavigation(videoId);
+
+        } catch (err) {
+            statusEl.textContent = `Failed to load video: ${err.message}`;
+            statusEl.classList.add('error');
+        }
+    }
+
+    async function fetchNavigation(videoId) {
+        try {
+            // Fetch both endpoints at the exact same time
+            const [prevRes, nextRes] = await Promise.all([
+                fetch(`/api/videos/${videoId}/previous`),
+                fetch(`/api/videos/${videoId}/next`)
+            ]);
+
+            let hasNav = false;
+
+            // Handle Previous (Status 200 means it exists, 404 means no previous)
+            if (prevRes.ok) {
+                const prevVideo = await prevRes.json();
+                prevBtn.href = `/video.html?id=${prevVideo.id}`;
+                prevTitle.textContent = prevVideo.title;
+                prevBtn.classList.remove('hidden');
+                hasNav = true;
+            }
+
+            // Handle Next
+            if (nextRes.ok) {
+                const nextVideo = await nextRes.json();
+                nextBtn.href = `/video.html?id=${nextVideo.id}`;
+                nextTitle.textContent = nextVideo.title;
+                nextBtn.classList.remove('hidden');
+                hasNav = true;
+            }
+
+            // Only show the nav container if at least one button is visible
+            if (hasNav) {
+                navContainer.style.display = 'flex';
+            }
+
+        } catch (err) {
+            // We don't fail the whole page if navigation fails, just log it
+            console.error("Failed to load navigation", err);
+        }
+    }
+
+    loadVideo();
+</script>
+
+</body>
+</html>

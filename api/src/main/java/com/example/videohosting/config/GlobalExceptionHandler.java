@@ -10,6 +10,9 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.support.MissingServletRequestPartException;
+import org.apache.catalina.connector.ClientAbortException;
+import org.springframework.web.context.request.async.AsyncRequestNotUsableException;
+
 
 import java.util.HashMap;
 import java.util.Map;
@@ -45,5 +48,10 @@ public class GlobalExceptionHandler {
         log.error("Unhandled exception", ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "internal server error"));
+    }
+
+    @ExceptionHandler({ AsyncRequestNotUsableException.class, ClientAbortException.class })
+    public void handleClientAbort(Exception ex) {
+        log.debug("Client aborted the connection during streaming: {}", ex.getMessage());
     }
 }

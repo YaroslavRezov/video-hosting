@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -43,5 +44,19 @@ public class VideoController implements VideoControllerApi {
                 .header(HttpHeaders.ACCEPT_RANGES, "bytes")
                 .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + video.getFilename() + "\"")
                 .body(video);
+    }
+
+    @Override
+    public ResponseEntity<VideoDto> getNextVideo(Long videoId) {
+        return videoService.getNextVideo(videoId)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @Override
+    public ResponseEntity<VideoDto> getPreviousVideo(Long videoId) {
+        return videoService.getPreviousVideo(videoId)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 }

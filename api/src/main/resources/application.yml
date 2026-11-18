@@ -8,3 +8,6 @@ spring:
 app:
   video:
     storage-dir: D:/sod-project/anime/anime-videos
+logging:
+  level:
+    com.example.videohosting.config.GlobalExceptionHandler: DEBUG

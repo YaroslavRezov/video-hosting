@@ -19,8 +19,7 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -93,5 +92,27 @@ public class VideoService {
             throw new RuntimeException("video file missing for id: " + id);
         }
         return new FileSystemResource(file);
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<VideoDto> getNextVideo(Long videoId) {
+        VideoEntity current = videoRepository.findById(videoId)
+                .orElseThrow(() -> new RuntimeException("no such video with id: " + videoId));
+
+        return videoRepository
+                .findFirstByTopicEntityIdAndEpisodeNumberGreaterThanOrderByEpisodeNumberAsc(
+                        current.getTopicEntity().getId(), current.getEpisodeNumber())
+                .map(videoMapper::toVideoDto);
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<VideoDto> getPreviousVideo(Long videoId) {
+        VideoEntity current = videoRepository.findById(videoId)
+                .orElseThrow(() -> new RuntimeException("no such video with id: " + videoId));
+
+        return videoRepository
+                .findFirstByTopicEntityIdAndEpisodeNumberLessThanOrderByEpisodeNumberDesc(
+                        current.getTopicEntity().getId(), current.getEpisodeNumber())
+                .map(videoMapper::toVideoDto);
     }
 }
