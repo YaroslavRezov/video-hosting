@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Anime Details</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #1a1a1a;
+            background-image: url('images/naruto background.jpeg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            padding-top: 40px;
+        }
+
+        .content-box {
+            width: 100%;
+            max-width: 900px;
+            background-color: #f4f4f4;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+            overflow: hidden;
+            margin-bottom: 50px;
+            height: fit-content;
+        }
+
+        .box-header {
+            background-color: #e65100;
+            color: white;
+            padding: 20px 30px;
+            border-bottom: 3px solid #000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .box-header h1 {
+            margin: 0;
+            font-size: 1.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+
+        .back-link {
+            color: #fff;
+            text-decoration: none;
+            font-size: 1rem;
+            font-weight: bold;
+            background: rgba(0,0,0,0.2);
+            padding: 5px 10px;
+            border-radius: 4px;
+        }
+        .back-link:hover {
+            background: rgba(0,0,0,0.4);
+        }
+
+        .box-content {
+            padding: 0;
+        }
+
+        #status {
+            color: #555;
+            font-size: 1rem;
+            padding: 20px 30px;
+            margin: 0;
+        }
+        #status.error {
+            color: #c01c28;
+            font-weight: bold;
+        }
+
+        .video-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .video-list li {
+            border-bottom: 1px solid #dcdcdc;
+        }
+
+        .video-list li:last-child {
+            border-bottom: none;
+        }
+
+        .video-list a {
+            display: block;
+            padding: 15px 30px;
+            color: #333;
+            text-decoration: none;
+            font-size: 1.1rem;
+            font-weight: bold;
+            background-color: #f9f9f9;
+            transition: background-color 0.2s;
+        }
+
+        .video-list a:hover {
+            background-color: #eaeaea;
+            color: #e65100;
+        }
+    </style>
+</head>
+<body>
+
+<div class="content-box">
+    <div class="box-header">
+        <h1 id="topic-title">Loading...</h1>
+        <a href="/" class="back-link">&laquo; Back to Topics</a>
+    </div>
+
+    <div class="box-content">
+        <!-- Убрали letter-header -->
+        <p id="status">Loading videos...</p>
+        <ul class="video-list" id="video-list"></ul>
+    </div>
+</div>
+
+<script>
+    const statusEl = document.getElementById('status');
+    const listEl = document.getElementById('video-list');
+    const titleEl = document.getElementById('topic-title');
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const topicId = urlParams.get('id');
+
+    async function loadPageData() {
+        if (!topicId) {
+            statusEl.textContent = 'Error: No topic ID provided in URL.';
+            statusEl.classList.add('error');
+            return;
+        }
+
+        try {
+            // 1. Fetch Topic Details
+            const topicResponse = await fetch(`/api/topics/${topicId}`);
+            if (!topicResponse.ok) throw new Error(`Topic HTTP ${topicResponse.status}`);
+            const topic = await topicResponse.json();
+
+            // 2. Update the orange header with the full name (e.g., "Naruto")
+            titleEl.textContent = topic.name;
+
+            // 3. Fetch Videos for this Topic
+            const videosResponse = await fetch(`/api/topics/${topicId}/videos`);
+            if (!videosResponse.ok) throw new Error(`Videos HTTP ${videosResponse.status}`);
+            const videos = await videosResponse.json();
+
+            if (videos.length === 0) {
+                statusEl.textContent = 'No videos uploaded for this anime yet.';
+                return;
+            }
+
+            statusEl.style.display = 'none';
+
+            // 4. Render the list
+            listEl.innerHTML = videos.map(video => `
+                    <li>
+                        <a href="/video.html?id=${video.id}">
+                            ${escapeHtml(video.title)}
+                        </a>
+                    </li>
+                `).join('');
+
+        } catch (err) {
+            statusEl.textContent = `Failed to load data: ${err.message}`;
+            statusEl.classList.add('error');
+        }
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    loadPageData();
+</script>
+
+</body>
+</html>
