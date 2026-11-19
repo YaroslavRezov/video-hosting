@@ -60,6 +60,7 @@ public class VideoServiceTest {
 
         TopicEntity topicEntity = new TopicEntity();
         topicEntity.setId(1L);
+        topicEntity.setName("Naruto");
 
         VideoEntity toSave = new VideoEntity();
         VideoEntity savedVideoEntity = new VideoEntity();
@@ -67,14 +68,14 @@ public class VideoServiceTest {
         savedVideoEntity.setTitle("Naruto Episode 136");
         savedVideoEntity.setEpisodeNumber(136);
         savedVideoEntity.setTopicEntity(topicEntity);
-        savedVideoEntity.setFilePath("D:/sod-project/anime/anime-videos/xxx.mp4");
+        savedVideoEntity.setFilePath("xxx.mp4");
 
         VideoDto expected = new VideoDto()
                 .id(10L)
                 .title("Naruto Episode 136")
                 .episodeNumber(136)
                 .topicId(1L)
-                .filePath("D:/sod-project/anime/anime-videos/xxx.mp4");
+                .filePath("xxx.mp4");
 
         when(topicRepository.findById(any())).thenReturn(Optional.of(topicEntity));
         when(videoRepository.existsByTopicEntityIdAndEpisodeNumber(any(), any())).thenReturn(false);
@@ -90,7 +91,10 @@ public class VideoServiceTest {
         verify(videoRepository).saveAndFlush(toSave);
         assertThat(actual).isEqualTo(expected);
 
-        try (var files = Files.list(tempDir)) {
+        Path narutoDir = tempDir.resolve("Naruto");
+        assertThat(narutoDir).exists();
+
+        try (var files = Files.list(narutoDir)) {
             assertThat(files)
                     .hasSize(1)
                     .allMatch(p -> p.toString().endsWith(".mp4"));
@@ -101,6 +105,7 @@ public class VideoServiceTest {
     public void getVideo() {
         TopicEntity topicEntity = new TopicEntity();
         topicEntity.setId(1L);
+        topicEntity.setName("Naruto");
         VideoEntity videoEntity = new VideoEntity();
         videoEntity.setId(10L);
         videoEntity.setTitle("Naruto Episode 136");
@@ -155,11 +160,14 @@ public class VideoServiceTest {
     @Test
     void getVideoStream_returnsResourceForExistingFile() throws IOException {
         String storedName = "abc-123.mp4";
-        Path file = tempDir.resolve(storedName);
+        Path narutoDir = tempDir.resolve("Naruto");
+        Files.createDirectories(narutoDir);
+        Path file = narutoDir.resolve(storedName);
         Files.write(file, new byte[]{1, 2, 3});
 
         TopicEntity topicEntity = new TopicEntity();
         topicEntity.setId(1L);
+        topicEntity.setName("Naruto");
 
         VideoEntity videoEntity = new VideoEntity();
         videoEntity.setId(10L);
@@ -191,6 +199,7 @@ public class VideoServiceTest {
     void getVideoStream_whenFileMissingOnDisk_shouldThrow() {
         TopicEntity topicEntity = new TopicEntity();
         topicEntity.setId(1L);
+        topicEntity.setName("Naruto");
 
         VideoEntity videoEntity = new VideoEntity();
         videoEntity.setId(10L);
@@ -209,6 +218,7 @@ public class VideoServiceTest {
     void getVideoStream_whenPathEscapesStorageDir_shouldThrow() {
         TopicEntity topicEntity = new TopicEntity();
         topicEntity.setId(1L);
+        topicEntity.setName("Naruto");
 
         VideoEntity videoEntity = new VideoEntity();
         videoEntity.setId(10L);

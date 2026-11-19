@@ -49,6 +49,7 @@ public class VideoControllerTest extends ControllerIT {
     @BeforeEach
     void setUp() {
         topicEntity = createTopicEntity1();
+        topicEntity.setName("Naruto");
         topicRepository.save(topicEntity);
     }
 
@@ -126,6 +127,7 @@ public class VideoControllerTest extends ControllerIT {
                 .andReturn();
 
         VideoDto actual = TestUtils.asObject(result.getResponse().getContentAsString(), VideoDto.class);
+        Path expectedDir = tempDir.resolve("Naruto");
 
         assertThat(actual.getId()).isNotNull();
         assertThat(actual.getTitle()).isEqualTo("Naruto Episode 1");
@@ -133,6 +135,7 @@ public class VideoControllerTest extends ControllerIT {
         assertThat(actual.getTopicId()).isEqualTo(topicEntity.getId());
         assertThat(actual.getFilePath()).endsWith(".mp4");
         assertThat(actual.getCreatedAt()).isNotNull();
+        assertThat(expectedDir).exists();
     }
 
     @Test
@@ -189,7 +192,9 @@ public class VideoControllerTest extends ControllerIT {
     void streamVideo_returnsFileBytes() throws Exception {
         String storedName = "stream-test.mp4";
         byte[] content = "fake-mp4-bytes".getBytes();
-        Path file = tempDir.resolve(storedName);
+        Path topicDir = tempDir.resolve("Naruto");
+        Files.createDirectories(topicDir);
+        Path file = topicDir.resolve(storedName);
         Files.write(file, content);
 
         VideoEntity savedVideoEntity = videoRepository.save(VideoEntity.builder()
@@ -232,7 +237,9 @@ public class VideoControllerTest extends ControllerIT {
         String storedName = "range-test.mp4";
         byte[] content = new byte[100];
         for (int i = 0; i < content.length; i++) content[i] = (byte) i;
-        Files.write(tempDir.resolve(storedName), content);
+        Path topicDir = tempDir.resolve("Naruto");
+        Files.createDirectories(topicDir);
+        Files.write(topicDir.resolve(storedName), content);
 
         VideoEntity savedVideoEntity = videoRepository.save(VideoEntity.builder()
                 .title("Range test")

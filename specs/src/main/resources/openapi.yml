@@ -259,7 +259,7 @@ components:
   schemas:
     Topic:
       type: object
-      required: [id, name, releasedAt]
+      required: [name, releasedAt]
       properties:
         id:
           type: integer
