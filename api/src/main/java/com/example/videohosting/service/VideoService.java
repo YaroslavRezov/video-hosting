@@ -29,7 +29,7 @@ public class VideoService {
     private final VideoMapper videoMapper;
     private final TopicRepository topicRepository;
 
-    @Value("${app.video.storage-dir:D:/sod-project/anime/anime-videos}")
+    @Value("${app.video.storage-dir}")
     private String storageDir;
 
     @Transactional(readOnly = true)
@@ -43,6 +43,11 @@ public class VideoService {
         VideoEntity videoEntity = videoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("no such video with id: " + id));
         return videoMapper.toVideoDto(videoEntity);
+    }
+
+    private Path getTopicDirectory(String topicName) {
+        String safeName = topicName.replaceAll("[^a-zA-Z0-9.-]", "_");
+        return Paths.get(storageDir).toAbsolutePath().resolve(safeName).normalize();
     }
 
     @Transactional
@@ -61,9 +66,10 @@ public class VideoService {
                             + " already exists in topic " + topicId);
         }
 
-        Path dir = Paths.get(storageDir);
+        Path dir = getTopicDirectory(foundTopicEntity.getName());
         String storedName = UUID.randomUUID() + ".mp4";
         Path target = dir.resolve(storedName);
+
         try {
             Files.createDirectories(dir);
             file.transferTo(target);
@@ -72,25 +78,27 @@ public class VideoService {
         }
 
         VideoEntity videoEntity = videoMapper
-                .toVideoEntity(title, episodeNumber, description, target.toAbsolutePath().toString(), foundTopicEntity);
+                .toVideoEntity(title, episodeNumber, description, storedName, foundTopicEntity);
         VideoEntity savedVideoEntity = videoRepository.saveAndFlush(videoEntity);
 
         return videoMapper.toVideoDto(savedVideoEntity);
     }
 
+    @Transactional(readOnly = true)
     public Resource getVideoStream(Long id) {
-        VideoEntity videoEntity = videoRepository.findById(id)
+        VideoEntity foundVideoEntity = videoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("no such video with id: " + id));
 
-        Path file = Paths.get(storageDir).toAbsolutePath().resolve(videoEntity.getFilePath()).normalize();
+        Path root = getTopicDirectory(foundVideoEntity.getTopicEntity().getName());
+        Path file = root.resolve(foundVideoEntity.getFilePath()).normalize();
 
-        Path root = Paths.get(storageDir).toAbsolutePath().normalize();
         if (!file.startsWith(root)) {
             throw new RuntimeException("invalid file path for video id: " + id);
         }
         if (!Files.exists(file) || !Files.isRegularFile(file)) {
             throw new RuntimeException("video file missing for id: " + id);
         }
+
         return new FileSystemResource(file);
     }
 

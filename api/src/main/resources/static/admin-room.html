@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Room</title>
+    <link rel="icon" href="data:,"> <!-- Stops the favicon error -->
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #1a1a1a;
+            background-image: url('https://images.unsplash.com/photo-1578632767115-351597cf2477?q=80&w=1920&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            padding-top: 40px;
+        }
+
+        .content-box {
+            width: 100%;
+            max-width: 1000px;
+            background-color: #f4f4f4;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+            overflow: hidden;
+            margin-bottom: 50px;
+            height: fit-content;
+        }
+
+        .box-header {
+            background-color: #e65100;
+            color: white;
+            padding: 15px 30px;
+            border-bottom: 3px solid #000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .box-header h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            text-transform: uppercase;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .back-link {
+            color: #fff;
+            text-decoration: none;
+            font-size: 1rem;
+            font-weight: bold;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 5px 10px;
+            border-radius: 4px;
+        }
+
+        .back-link:hover {
+            background: rgba(0, 0, 0, 0.4);
+        }
+
+        .box-content {
+            padding: 30px;
+        }
+
+        /* --- FORMS --- */
+        .forms-container {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+
+        .form-panel {
+            flex: 1;
+            min-width: 300px;
+            background: #fff;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .form-panel h2 {
+            margin-top: 0;
+            font-size: 1.2rem;
+            border-bottom: 2px solid #e65100;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+            color: #555;
+        }
+
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 1rem;
+        }
+
+        .form-group input[type="file"] {
+            padding: 5px;
+        }
+
+        .btn {
+            background-color: #e65100;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 10px 15px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.2s;
+        }
+
+        .btn:hover {
+            background-color: #cc4800;
+        }
+
+        .btn:disabled {
+            background-color: #aaa;
+            cursor: not-allowed;
+        }
+
+        /* --- TOPIC LIST --- */
+        .topic-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            border-top: 2px solid #ccc;
+        }
+
+        .topic-item {
+            border-bottom: 1px solid #dcdcdc;
+            background: #fff;
+        }
+
+        .topic-header {
+            padding: 15px 20px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: #e65100;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.2s;
+        }
+
+        .topic-header:hover {
+            background: #f9f9f9;
+        }
+
+        .topic-header .id-badge {
+            font-size: 0.8rem;
+            background: #333;
+            color: #fff;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: 10px;
+        }
+
+        .video-sublist {
+            display: none; /* Hidden by default */
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            background: #f9f9f9;
+        }
+
+        .video-sublist.open {
+            display: block;
+        }
+
+        /* Show when active */
+
+        .video-sublist li {
+            padding: 10px 20px 10px 50px;
+            border-top: 1px solid #eee;
+            font-size: 0.95rem;
+            color: #444;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .video-sublist li:hover {
+            background: #f0f0f0;
+        }
+
+        .empty-msg {
+            padding: 10px 20px 10px 50px;
+            color: #888;
+            font-style: italic;
+            font-size: 0.9rem;
+        }
+
+        /* --- ALERTS --- */
+        .alert {
+            padding: 10px 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            font-weight: bold;
+            display: none;
+        }
+
+        .alert.success {
+            display: block;
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert.error {
+            display: block;
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+
+<div class="content-box">
+    <div class="box-header">
+        <h1>Admin Room</h1>
+        <a href="/" class="back-link">&laquo; To Site</a>
+    </div>
+
+    <div class="box-content">
+        <div id="alert-box" class="alert"></div>
+
+        <div class="forms-container">
+            <!-- CREATE TOPIC FORM -->
+            <div class="form-panel">
+                <h2>Create New Anime</h2>
+                <form id="topic-form">
+                    <div class="form-group">
+                        <label>Name</label>
+                        <input type="text" id="topic-name" required placeholder="e.g. Naruto">
+                    </div>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea id="topic-desc" rows="2" placeholder="Short description..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Release Date</label>
+                        <input type="datetime-local" id="topic-date" required step="1">
+                    </div>
+                    <button type="submit" class="btn" id="topic-submit">Create Topic</button>
+                </form>
+            </div>
+
+            <!-- UPLOAD VIDEO FORM -->
+            <div class="form-panel">
+                <h2>Upload Episode</h2>
+                <form id="video-form">
+                    <div class="form-group">
+                        <label>Select Anime (Topic)</label>
+                        <select id="video-topic" required>
+                            <option value="">-- Loading topics... --</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Video Title</label>
+                        <input type="text" id="video-title" required placeholder="e.g. Naruto Episode 1">
+                    </div>
+                    <div class="form-group" style="display: flex; gap: 10px;">
+                        <div style="flex: 1;">
+                            <label>Episode #</label>
+                            <input type="number" id="video-ep" required placeholder="1" min="1">
+                        </div>
+                        <div style="flex: 2;">
+                            <label>MP4 File</label>
+                            <input type="file" id="video-file" accept=".mp4" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Description (optional)</label>
+                        <input type="text" id="video-desc">
+                    </div>
+                    <button type="submit" class="btn" id="video-submit">Upload Video</button>
+                </form>
+            </div>
+        </div>
+
+        <h2>Existing Topics & Videos</h2>
+        <ul class="topic-list" id="topic-list">
+            <li style="padding: 20px; color: #888;">Loading...</li>
+        </ul>
+    </div>
+</div>
+
+<script>
+    const alertBox = document.getElementById('alert-box');
+    const topicListEl = document.getElementById('topic-list');
+    const videoTopicSelect = document.getElementById('video-topic');
+
+    // Forms
+    const topicForm = document.getElementById('topic-form');
+    const videoForm = document.getElementById('video-form');
+
+    // --- Helpers ---
+    function showAlert(type, msg) {
+        alertBox.className = `alert ${type}`;
+        alertBox.textContent = msg;
+        setTimeout(() => alertBox.className = 'alert', 5000); // hide after 5s
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    // --- Fetch and Render Topics ---
+    async function loadTopics() {
+        try {
+            const res = await fetch('/api/topics');
+            const topics = await res.json();
+
+            // Update select dropdown
+            videoTopicSelect.innerHTML = '<option value="">-- Select Topic --</option>' +
+                topics.map(t => `<option value="${t.id}">${escapeHtml(t.name)}</option>`).join('');
+
+            // Update the list
+            if (topics.length === 0) {
+                topicListEl.innerHTML = '<li style="padding: 20px; color: #888;">No topics yet.</li>';
+                return;
+            }
+
+            topicListEl.innerHTML = topics.map(topic => `
+                    <li class="topic-item">
+                        <div class="topic-header" onclick="toggleTopic(${topic.id})">
+                            <div>
+                                ${escapeHtml(topic.name)}
+                                <span class="id-badge">ID: ${topic.id}</span>
+                            </div>
+                            <div style="font-size: 0.8rem; color: #888;">&#9660; Expand</div>
+                        </div>
+                        <ul class="video-sublist" id="sublist-${topic.id}">
+                            <li class="empty-msg">Loading videos...</li>
+                        </ul>
+                    </li>
+                `).join('');
+
+        } catch (err) {
+            topicListEl.innerHTML = `<li style="padding: 20px; color: red;">Failed to load topics: ${err.message}</li>`;
+        }
+    }
+
+    // --- Expand Topic and Load Videos ---
+    async function toggleTopic(topicId) {
+        const sublist = document.getElementById(`sublist-${topicId}`);
+
+        // Toggle open/closed
+        if (sublist.classList.contains('open')) {
+            sublist.classList.remove('open');
+            return;
+        }
+
+        sublist.classList.add('open');
+
+        // If already loaded, skip
+        if (sublist.getAttribute('data-loaded') === 'true') return;
+
+        try {
+            const res = await fetch(`/api/topics/${topicId}/videos`);
+            const videos = await res.json();
+
+            if (videos.length === 0) {
+                sublist.innerHTML = '<li class="empty-msg">No videos uploaded.</li>';
+            } else {
+                sublist.innerHTML = videos.map(v => `
+                        <li>
+                            <span><strong>Ep ${v.episodeNumber}:</strong> ${escapeHtml(v.title)}</span>
+                            <span style="color: #888; font-size: 0.8rem;">ID: ${v.id}</span>
+                        </li>
+                    `).join('');
+            }
+            sublist.setAttribute('data-loaded', 'true');
+        } catch (err) {
+            sublist.innerHTML = `<li style="color: red; padding: 10px 50px;">Failed to load videos</li>`;
+        }
+    }
+
+    // --- Create Topic ---
+    topicForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('topic-submit');
+        btn.disabled = true;
+        btn.textContent = 'Creating...';
+
+        const payload = {
+            name: document.getElementById('topic-name').value,
+            description: document.getElementById('topic-desc').value || null,
+            releasedAt: document.getElementById('topic-date').value + ":00" // Append seconds for valid LocalDateTime
+        };
+
+        try {
+            const res = await fetch('/api/topics', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
+            });
+
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+            showAlert('success', 'Topic created successfully!');
+            topicForm.reset();
+            loadTopics(); // Refresh list
+        } catch (err) {
+            showAlert('error', 'Failed to create topic: ' + err.message);
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Create Topic';
+        }
+    });
+
+    // --- Upload Video ---
+    videoForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('video-submit');
+        btn.disabled = true;
+        btn.textContent = 'Uploading...';
+
+        // Build multipart form data
+        const formData = new FormData();
+        formData.append('file', document.getElementById('video-file').files[0]);
+        formData.append('title', document.getElementById('video-title').value);
+        formData.append('episodeNumber', document.getElementById('video-ep').value);
+        formData.append('topicId', document.getElementById('video-topic').value);
+
+        const desc = document.getElementById('video-desc').value;
+        if (desc) formData.append('description', desc);
+
+        try {
+            // Note: We do NOT set Content-Type header. The browser sets it automatically
+            // with the correct multipart boundary when passing FormData.
+            const res = await fetch('/api/videos', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+            showAlert('success', 'Video uploaded successfully!');
+            videoForm.reset();
+
+            // Refresh the sublist for that topic if it's currently open
+            const topicId = formData.get('topicId');
+            const sublist = document.getElementById(`sublist-${topicId}`);
+            if (sublist) {
+                sublist.removeAttribute('data-loaded');
+                if (sublist.classList.contains('open')) {
+                    toggleTopic(topicId); // close
+                    toggleTopic(topicId); // reopen to force reload
+                }
+            }
+        } catch (err) {
+            showAlert('error', 'Upload failed: ' + err.message);
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Upload Video';
+        }
+    });
+
+    // Initialize
+    loadTopics();
+</script>
+
+</body>
+</html>
