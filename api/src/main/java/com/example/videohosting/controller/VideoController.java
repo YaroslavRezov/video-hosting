@@ -59,4 +59,10 @@ public class VideoController implements VideoControllerApi {
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
+
+    @Override
+    public ResponseEntity<Void> deleteVideo(Long id) {
+        videoService.delete(id);
+        return ResponseEntity.noContent().build();
+    }
 }

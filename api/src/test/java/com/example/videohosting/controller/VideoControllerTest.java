@@ -259,4 +259,26 @@ public class VideoControllerTest extends ControllerIT {
         assertThat(returned[0]).isEqualTo((byte) 10);
         assertThat(returned[9]).isEqualTo((byte) 19);
     }
+
+    @Test
+    void deleteVideo_removesRecordAndFile() throws Exception {
+        String storedName = "delete-api.mp4";
+        Path topicDir = tempDir.resolve("Naruto");
+        Files.createDirectories(topicDir);
+        Path file = topicDir.resolve(storedName);
+        Files.write(file, new byte[]{1, 2, 3});
+
+        VideoEntity savedVideoEntity = videoRepository.save(VideoEntity.builder()
+                .title("To Delete")
+                .episodeNumber(1)
+                .filePath(storedName)
+                .topicEntity(topicEntity)
+                .build());
+
+        mockMvc.perform(delete("/api/videos/{videoId}", savedVideoEntity.getId()))
+                .andExpect(status().isNoContent());
+
+        assertThat(videoRepository.findById(savedVideoEntity.getId())).isEmpty();
+        assertThat(Files.exists(file)).isFalse();
+    }
 }

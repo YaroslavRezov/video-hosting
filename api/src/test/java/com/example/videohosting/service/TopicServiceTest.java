@@ -3,12 +3,20 @@ package com.example.videohosting.service;
 import com.example.specs.generated.model.TopicDto;
 import com.example.videohosting.mapper.TopicMapper;
 import com.example.videohosting.model.entity.TopicEntity;
+import com.example.videohosting.model.entity.VideoEntity;
 import com.example.videohosting.repository.TopicRepository;
+import com.example.videohosting.repository.VideoRepository;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,12 +32,20 @@ import static org.mockito.Mockito.*;
 public class TopicServiceTest {
     @MockitoBean
     private TopicRepository topicRepository;
-
     @MockitoBean
     private TopicMapper topicMapper;
-
+    @MockitoBean
+    private VideoRepository videoRepository;
     @Autowired
     private TopicService topicService;
+
+    @TempDir
+    static Path tempDir;
+
+    @DynamicPropertySource
+    static void storageDir(DynamicPropertyRegistry registry) {
+        registry.add("app.video.storage-dir", () -> tempDir.toString());
+    }
 
     @Test
     public void getTopics() {
@@ -88,15 +104,26 @@ public class TopicServiceTest {
     }
 
     @Test
-    void delete() {
-        TopicEntity topicEntity = createTopicEntity1();
-        doNothing().when(topicRepository).deleteById(any());
+    void delete_removesTopicAllVideosAndAllFiles() throws IOException {
+        TopicEntity topic = new TopicEntity();
+        topic.setId(1L);
+        topic.setName("Naruto");
 
-        topicService.delete(topicEntity.getId());
+        VideoEntity video = new VideoEntity();
+        video.setId(10L);
+        video.setFilePath("ep1.mp4");
+        topic.setVideos(List.of(video));
 
-        verify(topicRepository).deleteById(topicEntity.getId());
+        when(topicRepository.findById(1L)).thenReturn(Optional.of(topic));
+        Path topicDir = tempDir.resolve("Naruto");
+        Files.createDirectories(topicDir);
+        Path file = topicDir.resolve("ep1.mp4");
+        Files.write(file, new byte[]{1, 2, 3});
+
+        topicService.delete(1L);
+
+        verify(topicRepository).delete(topic);
+        assertThat(Files.exists(file)).isFalse();
+        assertThat(Files.exists(topicDir)).isFalse();
     }
-
-
-
 }
