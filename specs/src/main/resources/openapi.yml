@@ -13,7 +13,7 @@ tags:
 paths:
   /api/topics:
     get:
-      tags: [TopicController]
+      tags: [ TopicController ]
       operationId: getTopics
       summary: List all topics
       responses:
@@ -26,7 +26,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/Topic'
     post:
-      tags: [TopicController]
+      tags: [ TopicController ]
       operationId: createTopic
       summary: Create a topic
       requestBody:
@@ -42,10 +42,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Topic'
-
   /api/topics/{topicId}:
     get:
-      tags: [TopicController]
+      tags: [ TopicController ]
       operationId: getTopic
       summary: Get a topic by id
       parameters:
@@ -64,10 +63,25 @@ paths:
                 $ref: '#/components/schemas/Topic'
         '404':
           description: Topic not found
-
+    delete:
+      tags: [ TopicController ]
+      operationId: deleteTopic
+      summary: Delete a topic, its videos from DB, and all files from disk
+      parameters:
+        - name: topicId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: Deleted successfully
+        '404':
+          description: Topic not found
   /api/topics/{topicId}/videos:
     get:
-      tags: [VideoController]
+      tags: [ VideoController ]
       operationId: getVideosByTopic
       summary: List videos under a topic, ordered by episode number
       parameters:
@@ -88,7 +102,7 @@ paths:
                   $ref: '#/components/schemas/Video'
   /api/videos:
     get:
-      tags: [VideoController]
+      tags: [ VideoController ]
       operationId: getVideos
       summary: List all videos, optionally filtered by topic
       parameters:
@@ -108,7 +122,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/Video'
     post:
-      tags: [VideoController]
+      tags: [ VideoController ]
       operationId: createVideo
       summary: Create a video with an uploaded file
       requestBody:
@@ -117,7 +131,7 @@ paths:
           multipart/form-data:
             schema:
               type: object
-              required: [file, title, episodeNumber, topicId]
+              required: [ file, title, episodeNumber, topicId ]
               properties:
                 file:
                   type: string
@@ -139,10 +153,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Video'
-
   /api/videos/{videoId}:
     get:
-      tags: [VideoController]
+      tags: [ VideoController ]
       operationId: getVideo
       summary: Get a single video
       parameters:
@@ -161,9 +174,25 @@ paths:
                 $ref: '#/components/schemas/Video'
         '404':
           description: Video not found
+    delete:
+      tags: [ VideoController ]
+      operationId: deleteVideo
+      summary: Delete a video and its file
+      parameters:
+        - name: videoId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: Deleted successfully
+        '404':
+          description: Video not found
   /api/videos/{videoId}/next:
     get:
-      tags: [VideoController]
+      tags: [ VideoController ]
       operationId: getNextVideo
       summary: Get the next video in the topic
       parameters:
@@ -185,7 +214,7 @@ paths:
 
   /api/videos/{videoId}/previous:
     get:
-      tags: [VideoController]
+      tags: [ VideoController ]
       operationId: getPreviousVideo
       summary: Get the previous video in the topic
       parameters:
@@ -206,7 +235,7 @@ paths:
           description: No previous video (start of series)
   /api/videos/search:
     get:
-      tags: [VideoController]
+      tags: [ VideoController ]
       operationId: searchVideos
       summary: Search videos by title
       parameters:
@@ -227,7 +256,7 @@ paths:
                   $ref: '#/components/schemas/Video'
   /api/videos/{videoId}/stream:
     get:
-      tags: [VideoController]
+      tags: [ VideoController ]
       operationId: streamVideo
       summary: Stream video file bytes (supports HTTP Range)
       parameters:
@@ -259,7 +288,7 @@ components:
   schemas:
     Topic:
       type: object
-      required: [name, releasedAt]
+      required: [ name, releasedAt ]
       properties:
         id:
           type: integer
@@ -274,20 +303,20 @@ components:
           type: string
           format: date-time
 
-#    TopicCreateRequest:
-#      type: object
-#      required: [name]
-#      properties:
-#        name:
-#          type: string
-#          maxLength: 255
-#        description:
-#          type: string
-#          nullable: true
+    #    TopicCreateRequest:
+    #      type: object
+    #      required: [name]
+    #      properties:
+    #        name:
+    #          type: string
+    #          maxLength: 255
+    #        description:
+    #          type: string
+    #          nullable: true
 
     Video:
       type: object
-      required: [id, title, episodeNumber, filePath, topicId, createdAt]
+      required: [ id, title, episodeNumber, filePath, topicId, createdAt ]
       properties:
         id:
           type: integer

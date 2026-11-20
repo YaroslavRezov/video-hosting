@@ -32,4 +32,10 @@ public class TopicController implements TopicControllerApi {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(topicService.save(topicDto));
     }
+
+    @Override
+    public ResponseEntity<Void> deleteTopic(Long topicId) {
+        topicService.delete(topicId);
+        return ResponseEntity.noContent().build();
+    }
 }

@@ -232,4 +232,29 @@ public class VideoServiceTest {
 
         assertEquals("invalid file path for video id: 10", ex.getMessage());
     }
+
+    @Test
+    void delete_removesFileAndDbRecord() throws IOException {
+        String storedName = "delete-me.mp4";
+        Path topicDir = tempDir.resolve("Naruto");
+        Files.createDirectories(topicDir);
+        Path file = topicDir.resolve(storedName);
+        Files.write(file, new byte[]{1, 2, 3});
+
+        TopicEntity topicEntity = new TopicEntity();
+        topicEntity.setId(1L);
+        topicEntity.setName("Naruto");
+
+        VideoEntity videoEntity = new VideoEntity();
+        videoEntity.setId(10L);
+        videoEntity.setFilePath(storedName);
+        videoEntity.setTopicEntity(topicEntity);
+
+        when(videoRepository.findById(10L)).thenReturn(Optional.of(videoEntity));
+
+        videoService.delete(10L);
+
+        verify(videoRepository).delete(videoEntity);
+        assertThat(Files.exists(file)).isFalse();
+    }
 }

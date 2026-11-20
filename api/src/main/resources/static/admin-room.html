@@ -210,6 +210,26 @@
             background: #f0f0f0;
         }
 
+        .delete-btn {
+            background-color: #c01c28;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            padding: 4px 8px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            margin-left: 15px;
+        }
+
+        .delete-btn:hover {
+            background-color: #a01520;
+        }
+
+        .video-info {
+            display: flex;
+            align-items: center;
+        }
+
         .empty-msg {
             padding: 10px 20px 10px 50px;
             color: #888;
@@ -341,11 +361,9 @@
             const res = await fetch('/api/topics');
             const topics = await res.json();
 
-            // Update select dropdown
             videoTopicSelect.innerHTML = '<option value="">-- Select Topic --</option>' +
                 topics.map(t => `<option value="${t.id}">${escapeHtml(t.name)}</option>`).join('');
 
-            // Update the list
             if (topics.length === 0) {
                 topicListEl.innerHTML = '<li style="padding: 20px; color: #888;">No topics yet.</li>';
                 return;
@@ -353,12 +371,16 @@
 
             topicListEl.innerHTML = topics.map(topic => `
                     <li class="topic-item">
+                        <!-- Added delete button and stopPropagation -->
                         <div class="topic-header" onclick="toggleTopic(${topic.id})">
                             <div>
                                 ${escapeHtml(topic.name)}
                                 <span class="id-badge">ID: ${topic.id}</span>
                             </div>
-                            <div style="font-size: 0.8rem; color: #888;">&#9660; Expand</div>
+                            <div style="display: flex; align-items: center; gap: 15px;">
+                                <button class="delete-btn" style="background-color: #721c24;" onclick="deleteTopic(event, ${topic.id})">Delete Topic</button>
+                                <span style="font-size: 0.8rem; color: #888;">&#9660; Expand</span>
+                            </div>
                         </div>
                         <ul class="video-sublist" id="sublist-${topic.id}">
                             <li class="empty-msg">Loading videos...</li>
@@ -368,6 +390,28 @@
 
         } catch (err) {
             topicListEl.innerHTML = `<li style="padding: 20px; color: red;">Failed to load topics: ${err.message}</li>`;
+        }
+    }
+
+    // --- New Delete Topic Function ---
+    async function deleteTopic(event, topicId) {
+        // Prevent the accordion from opening when we click delete
+        event.stopPropagation();
+
+        if (!confirm("Are you sure you want to delete this ENTIRE anime and all its videos? This cannot be undone.")) return;
+
+        try {
+            const res = await fetch(`/api/topics/${topicId}`, {
+                method: 'DELETE'
+            });
+
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+            showAlert('success', 'Anime and all videos deleted successfully.');
+            loadTopics(); // Refresh the whole list
+
+        } catch (err) {
+            showAlert('error', 'Failed to delete anime: ' + err.message);
         }
     }
 
@@ -395,7 +439,10 @@
             } else {
                 sublist.innerHTML = videos.map(v => `
                         <li>
-                            <span><strong>Ep ${v.episodeNumber}:</strong> ${escapeHtml(v.title)}</span>
+                            <span class="video-info">
+                                <strong>Ep ${v.episodeNumber}:</strong> ${escapeHtml(v.title)}
+                                <button class="delete-btn" onclick="deleteVideo(${topicId}, ${v.id})">Delete</button>
+                            </span>
                             <span style="color: #888; font-size: 0.8rem;">ID: ${v.id}</span>
                         </li>
                     `).join('');
@@ -416,7 +463,7 @@
         const payload = {
             name: document.getElementById('topic-name').value,
             description: document.getElementById('topic-desc').value || null,
-            releasedAt: document.getElementById('topic-date').value + ":00" // Append seconds for valid LocalDateTime
+            releasedAt: document.getElementById('topic-date').value
         };
 
         try {
@@ -487,7 +534,30 @@
         }
     });
 
-    // Initialize
+    // --- Delete Function ---
+    async function deleteVideo(topicId, videoId) {
+        if (!confirm("Are you sure you want to delete this video?")) return;
+
+        try {
+            const res = await fetch(`/api/videos/${videoId}`, {
+                method: 'DELETE'
+            });
+
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+            showAlert('success', 'Video deleted successfully.');
+
+            // Force the sublist to reload
+            const sublist = document.getElementById(`sublist-${topicId}`);
+            sublist.removeAttribute('data-loaded');
+            sublist.classList.remove('open');
+            toggleTopic(topicId);
+
+        } catch (err) {
+            showAlert('error', 'Failed to delete video: ' + err.message);
+        }
+    }
+
     loadTopics();
 </script>
 

@@ -123,4 +123,21 @@ public class VideoService {
                         current.getTopicEntity().getId(), current.getEpisodeNumber())
                 .map(videoMapper::toVideoDto);
     }
+    @Transactional
+    public void delete(Long id) {
+        VideoEntity videoEntity = videoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("no such video with id: " + id));
+
+        Path root = getTopicDirectory(videoEntity.getTopicEntity().getName());
+        Path fileToDelete = root.resolve(videoEntity.getFilePath()).normalize();
+
+        try {
+            if (Files.exists(fileToDelete)) {
+                Files.delete(fileToDelete);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to delete file from disk. Is the video currently playing?", e);        }
+
+        videoRepository.delete(videoEntity);;
+    }
 }

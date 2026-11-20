@@ -2,15 +2,22 @@ package com.example.videohosting.controller;
 
 import com.example.specs.generated.model.TopicDto;
 import com.example.videohosting.model.entity.TopicEntity;
+import com.example.videohosting.model.entity.VideoEntity;
 import com.example.videohosting.repository.TopicRepository;
+import com.example.videohosting.repository.VideoRepository;
 import com.example.videohosting.utils.TestUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MvcResult;
 
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -24,6 +31,17 @@ public class TopicControllerTest extends ControllerIT {
 
     @Autowired
     private TopicRepository topicRepository;
+
+    @Autowired
+    private VideoRepository videoRepository;
+
+    @TempDir
+    static Path tempDir;
+
+    @DynamicPropertySource
+    static void storageDir(DynamicPropertyRegistry registry) {
+        registry.add("app.video.storage-dir", () -> tempDir.toString());
+    }
 
     @AfterEach
     void cleanUp() {
@@ -115,6 +133,46 @@ public class TopicControllerTest extends ControllerIT {
         mockMvc.perform(post("/api/topics")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(TestUtils.asJsonString(duplicate)))
+                .andExpect(status().is5xxServerError());
+    }
+
+    @Test
+    void deleteTopic_removesTopicAndAllAssociatedFiles() throws Exception {
+        // Arrange: Save a Topic
+        TopicEntity topic = new TopicEntity();
+        topic.setName("Naruto");
+        topic.setReleasedAt(LocalDateTime.now());
+        topic = topicRepository.save(topic);
+
+        VideoEntity video = new VideoEntity();
+        video.setTitle("Naruto Ep 1");
+        video.setEpisodeNumber(1);
+        video.setFilePath("ep1.mp4");
+        video.setTopicEntity(topic);
+        video = videoRepository.save(video);
+
+        Path topicDir = tempDir.resolve("Naruto");
+        Files.createDirectories(topicDir);
+        Path fileOnDisk = topicDir.resolve("ep1.mp4");
+        Files.write(fileOnDisk, new byte[]{1, 2, 3});
+
+        assertThat(topicRepository.findById(topic.getId())).isPresent();
+        assertThat(videoRepository.findById(video.getId())).isPresent();
+        assertThat(Files.exists(fileOnDisk)).isTrue();
+
+        mockMvc.perform(delete("/api/topics/{topicId}", topic.getId()))
+                .andExpect(status().isNoContent());
+
+        assertThat(topicRepository.findById(topic.getId())).isEmpty();
+        assertThat(videoRepository.findById(video.getId())).isEmpty();
+
+        assertThat(Files.exists(fileOnDisk)).isFalse();
+        assertThat(Files.exists(topicDir)).isFalse();
+    }
+
+    @Test
+    void deleteTopic_whenTopicNotFound_shouldReturn5xx() throws Exception {
+        mockMvc.perform(delete("/api/topics/{topicId}", 999_999L))
                 .andExpect(status().is5xxServerError());
     }
 }
