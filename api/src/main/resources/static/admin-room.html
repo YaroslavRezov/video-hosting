@@ -265,7 +265,10 @@
 <div class="content-box">
     <div class="box-header">
         <h1>Admin Room</h1>
-        <a href="/" class="back-link">&laquo; To Site</a>
+        <div style="display: flex; gap: 10px;">
+            <a href="/" class="back-link" style="background: rgba(0,0,0,0.2);"> &laquo; To Site</a>
+            <button onclick="logout()" class="back-link" style="background: rgba(0,0,0,0.2); border: none; cursor: pointer;">Logout</button>
+        </div>
     </div>
 
     <div class="box-content">
@@ -332,7 +335,11 @@
     </div>
 </div>
 
+
 <script>
+    if (!localStorage.getItem('jwt')) {
+        window.location.href = '/login.html';
+    }
     const alertBox = document.getElementById('alert-box');
     const topicListEl = document.getElementById('topic-list');
     const videoTopicSelect = document.getElementById('video-topic');
@@ -370,7 +377,6 @@
 
             topicListEl.innerHTML = topics.map(topic => `
                     <li class="topic-item">
-                        <!-- Added delete button and stopPropagation -->
                         <div class="topic-header" onclick="toggleTopic(${topic.id})">
                             <div>
                                 ${escapeHtml(topic.name)}
@@ -401,7 +407,8 @@
 
         try {
             const res = await fetch(`/api/topics/${topicId}`, {
-                method: 'DELETE'
+                method: 'DELETE',
+                headers: authHeaders()
             });
 
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -468,7 +475,7 @@
         try {
             const res = await fetch('/api/topics', {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
+                headers: {'Content-Type': 'application/json', ...authHeaders()},
                 body: JSON.stringify(payload)
             });
 
@@ -476,7 +483,7 @@
 
             showAlert('success', 'Topic created successfully!');
             topicForm.reset();
-            loadTopics(); // Refresh list
+            loadTopics();
         } catch (err) {
             showAlert('error', 'Failed to create topic: ' + err.message);
         } finally {
@@ -503,11 +510,10 @@
         if (desc) formData.append('description', desc);
 
         try {
-            // Note: We do NOT set Content-Type header. The browser sets it automatically
-            // with the correct multipart boundary when passing FormData.
             const res = await fetch('/api/videos', {
                 method: 'POST',
-                body: formData
+                body: formData,
+                headers: authHeaders()
             });
 
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -515,7 +521,6 @@
             showAlert('success', 'Video uploaded successfully!');
             videoForm.reset();
 
-            // Refresh the sublist for that topic if it's currently open
             const topicId = formData.get('topicId');
             const sublist = document.getElementById(`sublist-${topicId}`);
             if (sublist) {
@@ -539,7 +544,8 @@
 
         try {
             const res = await fetch(`/api/videos/${videoId}`, {
-                method: 'DELETE'
+                method: 'DELETE',
+                headers: authHeaders()
             });
 
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -555,6 +561,16 @@
         } catch (err) {
             showAlert('error', 'Failed to delete video: ' + err.message);
         }
+    }
+
+    function authHeaders() {
+        const token = localStorage.getItem('jwt');
+        return token ? { 'Authorization': `Bearer ${token}` } : {};
+    }
+
+    function logout() {
+        localStorage.removeItem('jwt');
+        window.location.href = '/login.html';
     }
 
     loadTopics();

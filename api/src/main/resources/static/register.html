@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Register Admin</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #1a1a1a;
+            background-image: url('images/akatsuki.png');
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .box {
+            background: #f4f4f4;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+            width: 300px;
+        }
+
+        h2 {
+            text-align: center;
+            color: #e60000;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background: #e60000;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #770606;
+        }
+
+        #msg {
+            text-align: center;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        a {
+            display: block;
+            text-align: center;
+            margin-top: 15px;
+            color: #e60000;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+<div class="box">
+    <h2>Register</h2>
+    <div id="msg"></div>
+    <form id="reg-form">
+        <input type="text" id="username" placeholder="Username" required>
+        <input type="password" id="password" placeholder="Password" required>
+        <input type="password" id="secret" placeholder="Secret Invite Code" required>
+        <button type="submit">Sign Up</button>
+    </form>
+    <a href="/login.html">Already have an account? Login</a>
+</div>
+<script>
+    document.getElementById('reg-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const msg = document.getElementById('msg');
+        msg.style.color = 'black';
+        msg.textContent = 'Registering...';
+
+        const res = await fetch('/api/auth/register', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                username: document.getElementById('username').value,
+                password: document.getElementById('password').value,
+                secret: document.getElementById('secret').value
+            })
+        });
+
+        if (res.ok) {
+            msg.style.color = 'green';
+            msg.textContent = 'Success! Redirecting to login...';
+            setTimeout(() => window.location.href = '/login.html', 1500);
+        } else {
+            const data = await res.json();
+            msg.style.color = 'red';
+            msg.textContent = data.error || 'Registration failed';
+        }
+    });
+</script>
+</body>
+</html>
