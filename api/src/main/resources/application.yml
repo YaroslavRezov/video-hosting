@@ -1,24 +1,31 @@
 spring:
   application:
     name: video-hosting
+
   servlet:
     multipart:
       max-file-size: 300MB
       max-request-size: 300MB
+
   docker:
     compose:
       enabled: false
+
   datasource:
-    url: jdbc:postgresql://localhost:5433/video-hosting
-    username: postgres
-    password: postgres
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5433/video-hosting}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:postgres}
+
 app:
   video:
-    storage-dir: ${STORAGE_DIR:D:/sod-project/anime/anime-videos}
+    storage-dir: ${STORAGE_DIR:/data/videos}
+
   jwt:
-    secret: ${JWT_SECRET:414E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+    secret: ${JWT_SECRET}
     expiration-ms: ${JWT_EXPIRATION_MS:86400000}
-  registration-secret: ${REGISTRATION_SECRET:fake}
+
+  registration-secret: ${REGISTRATION_SECRET}
+
 logging:
   level:
     com.example.videohosting.config.GlobalExceptionHandler: DEBUG
