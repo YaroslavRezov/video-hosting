@@ -283,7 +283,44 @@ paths:
                 format: binary
         '404':
           description: Video not found
-
+  /api/auth/login:
+    post:
+      tags: [ AuthController ]
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: Unauthorized
+  /api/auth/register:
+    post:
+      tags: [ AuthController ]
+      operationId: register
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '409':
+          description: Conflict (Username taken)
 components:
   schemas:
     Topic:
@@ -338,6 +375,27 @@ components:
         createdAt:
           type: string
           format: date-time
+
+    AuthRequest:
+      type: object
+      required: [ username, password ]
+      properties:
+        username: { type: string }
+        password: { type: string }
+        secret: { type: string }
+
+    AuthResponse:
+      type: object
+      required: [ token, username ]
+      properties:
+        token: { type: string }
+        username: { type: string }
+
+    MessageResponse:
+      type: object
+      required: [ message ]
+      properties:
+        message: { type: string }
 
 #    VideoCreateRequest:
 #      type: object
