@@ -63,3 +63,4 @@ CREATE INDEX idx_video_title_lower
 ALTER SEQUENCE topic_id_seq OWNED BY topic.id;
 ALTER SEQUENCE video_id_seq OWNED BY video.id;
 ALTER SEQUENCE users_id_seq OWNED BY users.id;
+
